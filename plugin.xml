@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="android-location-provider" 
+    version="0.0.1" xmlns="http://apache.org/cordova/ns/plugins/1.0" 
+    xmlns:android="http://schemas.android.com/apk/res/android">
+  <name>LocationProvider</name>
+  <author>M.Ismail</author>
+  <description>
+      This plugin using google play services to connect with native location provider. 
+    </description>
+    <repo>https://github.com/Mohamedismail77/Android-Location-Provider.git</repo>
+    <issue>https://github.com/Mohamedismail77/Android-Location-Provider/issue</issue>
+    <keywords>native, android, location, Gbs, google map, locationServices, map</keywords>
+    <js-module name="LocationProvider" src="www/LocationProvider.js">
+      <clobbers target="Location.Provider" /></js-module>
+      <platform name="android">
+        <!--dependencies goes here-->
+        <!--and add to build.gradle just like native-->
+        <framework src="build.gradle" custom="true" type="gradleReference"/>
+        <config-file parent="/*" target="res/xml/config.xml">
+            <!-- feature is the native class for android -->
+            <feature name="LocationProvider">
+                <param name="android-package" value="com.location.provider.LocationProvider" />
+                <!-- To run on initialization of the plugin must include onload param -->
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml">
+            <!--use permission declear here-->
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />  
+        </config-file>
+        <source-file src="src/android/LocationProvider.java" target-dir="src/com/location/provider"/>
+        <source-file src="src/android/LocationController.java" target-dir="src/com/location/provider"/>
+
+    </platform>
+  </plugin>

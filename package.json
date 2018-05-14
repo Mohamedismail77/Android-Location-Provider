@@ -1,0 +1,32 @@
+{
+    "name": "LocationProvider",
+    "version": "0.0.1",
+    "description": "\nThis plugin using google play services to connect with native location provider.",
+    "cordova": {
+      "id": "android-location-provider",
+      "platforms": [
+        "android"
+      ]
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Mohamedismail77/Android-Location-Provider.git"
+    },
+    "keywords": [
+      "native",
+      "android",
+      "location",
+      "Gbs",
+      "google map",
+      "locationServices",
+      "map",
+      "ecosystem:cordova",
+      "cordova-android"
+    ],
+    "author": "M.Ismail",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/Mohamedismail77/Android-Location-Provider/issues"
+    },
+    "homepage": "https://github.com/Mohamedismail77/Android-Location-Provider#readme"
+  }
