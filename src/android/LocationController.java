@@ -1,4 +1,4 @@
-package lp.location.provider;
+package com.cordova.plugin.location.provider;
 
 
 public class LocationController {

@@ -1,3 +1,10 @@
+allprojects {
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://maven.google.com" }
+    }
+}
 dependencies {
-    compile 'com.google.android.gms:play-services-location:11.8.0'
+    implementation 'com.google.android.gms:play-services-location:15.0.1'
 }
