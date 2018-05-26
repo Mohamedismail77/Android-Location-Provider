@@ -2,8 +2,10 @@ package com.cordova.plugin.location.provider;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import org.apache.cordova.CordovaInterface;
@@ -11,6 +13,7 @@ import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,11 +22,12 @@ import static android.app.Activity.RESULT_CANCELED;
 
 
 //Native interface class as defined in plugin.xml
-public class LocationProvider extends CordovaPlugin {
+public class LocationProvider extends CordovaPlugin implements LocationController.onLocationUpdated {
 
     private final int REQUEST_CHECK_SETTINGS = 105;
     private final int LOCATION_SETTING_REQUEST = 106;
     private LocationController mLocationController;
+    public CallbackContext updateLocation;
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -57,12 +61,18 @@ public class LocationProvider extends CordovaPlugin {
      * @return: success callback contain the current location in form of longitude and latitude;
      */
     private void getLastKnownLocation(CallbackContext callbackContext) throws JSONException {
-        Location location = mLocationController.getmCurrentLocation();
-        //Return location latitude and longitude as json object
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("latitude",location.getLatitude());
-        jsonObject.put("longitude",location.getLongitude());
-        callbackContext.success( jsonObject);
+        if(mLocationController.getmCurrentLocation() != null){
+            Location location = mLocationController.getmCurrentLocation();
+            //Return location latitude and longitude as json object
+            JSONObject currentLocation = new JSONObject();
+            currentLocation.put("latitude",location.getLatitude());
+            currentLocation.put("longitude",location.getLongitude());
+            callbackContext.success( currentLocation);
+        } else {
+            // In case of null location
+            callbackContext.error("can't get location on this time try again later");
+        }
+
     }
 
     /*
@@ -71,14 +81,25 @@ public class LocationProvider extends CordovaPlugin {
      * @param: fastestUpdateInterval =>  the fastest rate in milliseconds at which your app can handle location updates;
      * @return: plugin result not a success callback to remain the listener;
      */
-    private void getLocationUpdate(int updateInterval,int fastestUpdateInterval,CallbackContext callbackContext){
-        
-        // set new location request paramter
-        
-        //set location callback
-        
-        //set plugin result
-        
+    private void getLocationUpdate(int updateInterval,int fastestUpdateInterval,CallbackContext callbackContext) throws JSONException {
+
+        // set new location request parameter
+        mLocationController.getLocationUpdate(this,updateInterval,fastestUpdateInterval);
+        // Get current location
+        Location location = mLocationController.getmCurrentLocation();
+        JSONObject currentLocation = new JSONObject();
+        if(location != null){
+            //Return location latitude and longitude as json object
+            currentLocation.put("latitude",location.getLatitude());
+            currentLocation.put("longitude",location.getLongitude());
+        }
+
+        // Return plugin result to keep callback
+        PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, currentLocation);
+        pluginResult.setKeepCallback(true); // keep callback
+        callbackContext.sendPluginResult(pluginResult);
+        updateLocation = callbackContext;
+
     }
 
     /*
@@ -98,6 +119,27 @@ public class LocationProvider extends CordovaPlugin {
      */
     private void stop(){
 
+    }
+
+    @Override
+    public void setOnLocationUpdate(Location location) {
+        if(updateLocation != null){
+
+            // Get current location
+            //Return location latitude and longitude as json object
+            JSONObject currentLocation = new JSONObject();
+            try {
+                currentLocation.put("latitude",location.getLatitude());
+                currentLocation.put("longitude",location.getLongitude());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            // Return plugin result to keep callback
+            PluginResult pluginResult = new PluginResult(PluginResult.Status.OK,currentLocation);
+            pluginResult.setKeepCallback(true); // keep callback
+            updateLocation.sendPluginResult(pluginResult);
+        }
     }
 
     @Override
@@ -135,7 +177,16 @@ public class LocationProvider extends CordovaPlugin {
     }
 
 
+    @Override
+    public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException {
 
+        if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            //permission is granted
+            //initiate fused location
+            mLocationController = new LocationController(cordova.getActivity());
+        }
+    }
 }
 
 

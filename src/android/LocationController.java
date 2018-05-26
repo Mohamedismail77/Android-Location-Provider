@@ -23,6 +23,7 @@ import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -47,10 +48,15 @@ public class LocationController implements GoogleApiClient.ConnectionCallbacks, 
     private LocationCallback mLocationCallback;
     private final String REQUEST_LOCATION_UPDATES_KEY = "location_update";
     private final String CURRENT_LOCATION_KEY = "current_location";
-    private final int LOCATION_UPDATE_INTERVAL = 1000;
-    private final int LOCATION_FASTEST_UPDATE_INTERVAL = 400;
+    private int LOCATION_UPDATE_INTERVAL = 1000;
+    private int LOCATION_FASTEST_UPDATE_INTERVAL = 400;
     //private AddressResultReceiver mResultReceiver;
     //private String mAddressOutput;
+
+    private onLocationUpdated onLoactionUpdated;
+    public interface onLocationUpdated{
+        void setOnLocationUpdate(Location location);
+    }
 
     public LocationController(Activity activity){
         mActivity = activity;
@@ -119,9 +125,11 @@ public class LocationController implements GoogleApiClient.ConnectionCallbacks, 
             @Override
             public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
                 if (mRequestingLocationUpdates) {
-                    //startLocationUpdates();
+                    startLocationUpdates();
                 } else {
-                    getLastKnownLocation();
+                    if(mFusedLocationClient != null && mCurrentLocation == null){
+                        getLastKnownLocation();
+                    }
                 }
             }
         });
@@ -192,11 +200,26 @@ public class LocationController implements GoogleApiClient.ConnectionCallbacks, 
                     //Next check whether the current location settings are satisfied
                     SettingsClient client = LocationServices.getSettingsClient(mActivity);
                     task = client.checkLocationSettings(builder.build());
-                    Toast.makeText(mContext, "Location not found", Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
+
+    @SuppressLint("MissingPermission")
+    private void startLocationUpdates() {
+        if(checkForLocationPermissions()){
+            mFusedLocationClient.requestLocationUpdates(mLocationRequest,
+                    mLocationCallback,
+                    null /* Looper */);
+        }
+
+    }
+
+    private void stopLocationUpdates() {
+        mRequestingLocationUpdates = false;
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+    }
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         // Check for location permissions is granted or not
@@ -224,6 +247,38 @@ public class LocationController implements GoogleApiClient.ConnectionCallbacks, 
 
     public Location getmCurrentLocation(){
         return mCurrentLocation;
+    }
+
+    public void getLocationUpdate(LocationProvider provider, int updateInterval,int fastestUpdateInterval){
+
+        LOCATION_UPDATE_INTERVAL = updateInterval;
+        LOCATION_FASTEST_UPDATE_INTERVAL = fastestUpdateInterval;
+        //set new location setting
+        setmFusedLocationClient(LOCATION_UPDATE_INTERVAL, LOCATION_FASTEST_UPDATE_INTERVAL);
+        onLoactionUpdated = (onLocationUpdated) provider;
+        mRequestingLocationUpdates = true;
+        //set new location request settings
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+        //Next check whether the current location settings are satisfied
+        SettingsClient client = LocationServices.getSettingsClient(mActivity);
+        task = client.checkLocationSettings(builder.build());
+
+        // Initiate Location callback to start fetching location updates
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    // Update with location data
+                    mCurrentLocation = location;
+                    onLoactionUpdated.setOnLocationUpdate(mCurrentLocation);
+                }
+            }
+        };
+
     }
 
 
