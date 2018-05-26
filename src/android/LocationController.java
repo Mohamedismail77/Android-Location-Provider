@@ -6,11 +6,15 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -50,12 +54,18 @@ public class LocationController implements GoogleApiClient.ConnectionCallbacks, 
     private final String CURRENT_LOCATION_KEY = "current_location";
     private int LOCATION_UPDATE_INTERVAL = 1000;
     private int LOCATION_FASTEST_UPDATE_INTERVAL = 400;
-    //private AddressResultReceiver mResultReceiver;
-    //private String mAddressOutput;
+    private AddressResultReceiver mResultReceiver;
+    private String mAddressOutput;
+    private String PACKAGE_NAME = "package_name";
 
     private onLocationUpdated onLoactionUpdated;
     public interface onLocationUpdated{
         void setOnLocationUpdate(Location location);
+    }
+
+    private onAddressFound onAddressFound;
+    public interface onAddressFound{
+        void setOnAddressFound(String address);
     }
 
     public LocationController(Activity activity){
@@ -279,6 +289,57 @@ public class LocationController implements GoogleApiClient.ConnectionCallbacks, 
             }
         };
 
+    }
+
+    public void getAddress(LocationProvider provider, double latitude, double longitude){
+
+        onAddressFound = (onAddressFound) provider;
+        // Check if Geocoder is available
+        if (!Geocoder.isPresent()) {
+            Toast.makeText(mContext,
+                    "No geCoder available ",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        // Start service and update UI to reflect new location
+        mResultReceiver = new AddressResultReceiver(new Handler());
+
+        // Start background services
+        Intent intent = new Intent(mContext, FetchAddressIntentService.class);
+        intent.putExtra(FetchAddressIntentService.Constants.RECEIVER, mResultReceiver);
+        intent.putExtra(FetchAddressIntentService.Constants.LOCATION_LATITUDE_EXTRA, latitude);
+        intent.putExtra(FetchAddressIntentService.Constants.LOCATION_LONGITUDE_EXTRA, longitude);
+        intent.putExtra(PACKAGE_NAME,mActivity.getApplicationContext().getPackageName());
+        mActivity.startService(intent);
+    }
+
+
+    class AddressResultReceiver extends ResultReceiver {
+        private AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            if (resultData == null) {
+                return;
+            }
+
+            // Display the address string
+            // or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(FetchAddressIntentService.Constants.RESULT_DATA_KEY);
+            if (mAddressOutput == null) {
+                mAddressOutput = "";
+            }
+            //return address to js interface
+            onAddressFound.setOnAddressFound(mAddressOutput);
+            // Show a toast message if an address was found.
+            if (resultCode == FetchAddressIntentService.Constants.SUCCESS_RESULT) {
+                Toast.makeText(mContext, "Address found", Toast.LENGTH_SHORT).show();
+            }
+
+        }
     }
 
 

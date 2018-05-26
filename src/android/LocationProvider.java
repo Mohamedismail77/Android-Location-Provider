@@ -22,12 +22,13 @@ import static android.app.Activity.RESULT_CANCELED;
 
 
 //Native interface class as defined in plugin.xml
-public class LocationProvider extends CordovaPlugin implements LocationController.onLocationUpdated {
+public class LocationProvider extends CordovaPlugin implements LocationController.onLocationUpdated, LocationController.onAddressFound {
 
     private final int REQUEST_CHECK_SETTINGS = 105;
     private final int LOCATION_SETTING_REQUEST = 106;
     private LocationController mLocationController;
     public CallbackContext updateLocation;
+    public CallbackContext addressCallBack;
 
     @Override
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -50,7 +51,10 @@ public class LocationProvider extends CordovaPlugin implements LocationControlle
                 getLastKnownLocation(callbackContext);
                 return true;
             case "getLocationUpdate":
-                getLocationUpdate(args.getInt(0),args.getInt(1),callbackContext);
+                getLocationUpdate(args.getInt(0), args.getInt(1), callbackContext);
+                return true;
+            case "getLocationAddress":
+                getLocationAddress(args.getDouble(0), args.getDouble(1), callbackContext);
                 return true;
         }
         return super.execute(action, args, callbackContext);
@@ -109,8 +113,9 @@ public class LocationProvider extends CordovaPlugin implements LocationControlle
      * @return: plugin  success callback if address is found || and error callback in case of null address;
      */
 
-    private void getLocationAddress(double latitude, double longitude){
-
+    private void getLocationAddress(double latitude, double longitude, CallbackContext callbackContext){
+        mLocationController.getAddress(this, latitude, longitude);
+        addressCallBack = callbackContext;
     }
 
     /*
@@ -140,6 +145,15 @@ public class LocationProvider extends CordovaPlugin implements LocationControlle
             pluginResult.setKeepCallback(true); // keep callback
             updateLocation.sendPluginResult(pluginResult);
         }
+    }
+
+    @Override
+    public void setOnAddressFound(String address) {
+
+        if(addressCallBack != null){
+            addressCallBack.success(address);
+        }
+
     }
 
     @Override
@@ -187,6 +201,8 @@ public class LocationProvider extends CordovaPlugin implements LocationControlle
             mLocationController = new LocationController(cordova.getActivity());
         }
     }
+
+
 }
 
 
