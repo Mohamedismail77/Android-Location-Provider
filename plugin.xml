@@ -30,7 +30,7 @@
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
             <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />  
         </config-file>
-        <config-file parent=parent"/manifest/application" target="AndroidManifest.xml">
+        <config-file parent="/manifest/application" target="AndroidManifest.xml">
             <!-- adding services to manifest file -->
             <service android:name="com.cordova.plugin.location.provider.FetchAddressIntentService" android:exported="false"/>
         </config-file>
