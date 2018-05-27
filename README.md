@@ -70,7 +70,7 @@
 
 ## How to install
 ```bash
-    cordova plugin add https://github.com/Mohamedismail77/Android-Location-Provider.git
+    cordova plugin add android-location-provider
 ```
 
 
