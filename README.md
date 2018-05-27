@@ -1,4 +1,4 @@
-# Android Location Provider for Cordova
+# Android Location Provider for Cordova r1.0.0
 ###### Android Location Provider is a cordova plugin allow users to interact with native android location services, through google play services location provider 15.0.1.
 
 ## It's easy to use:
