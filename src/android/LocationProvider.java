@@ -202,6 +202,12 @@ public class LocationProvider extends CordovaPlugin implements LocationControlle
         }
     }
 
+    @Override
+    public void onStop() {
+        //Stop google api client
+        mLocationController.stop();
+        super.onStop();
+    }
 
 }
 

@@ -342,5 +342,9 @@ public class LocationController implements GoogleApiClient.ConnectionCallbacks, 
         }
     }
 
+    public void stop(){
+        mGoogleApiClient.disconnect();
+        stopLocationUpdates();
+    }
 
 }
