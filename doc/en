@@ -66,6 +66,18 @@ $ Get formated adderss as string
 
 $ How to install
 
-    $cordova plugin add http://mohamed.ismail%40sourcya.com@secure.sourcya.net:7990/scm/nabionic/nabtrack.io-cordova-plugin.git
+    $cordova plugin add https://github.com/Mohamedismail77/Android-Location-Provider.git
+
+Contribute
+----------
+
+- Issue Tracker: https://github.com/Mohamedismail77/Android-Location-Provider/issues
+- Source Code: https://github.com/Mohamedismail77/Android-Location-Provider.git
+
+Support
+-------
+
+If you are having issues, please let us know.
+We have a mailing list located at: es-Mohamed.AboSeda@alexu.edu.eg
 
 

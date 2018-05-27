@@ -70,5 +70,7 @@
 
 ## How to install
 ```bash
-    cordova plugin add http://mohamed.ismail%40sourcya.com@secure.sourcya.net:7990/scm/nabionic/nabtrack.io-cordova-plugin.git
+    cordova plugin add https://github.com/Mohamedismail77/Android-Location-Provider.git
 ```
+
+
