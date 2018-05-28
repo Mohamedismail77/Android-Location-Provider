@@ -1,6 +1,6 @@
 {
   "name": "android-location-provider",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "\nThis plugin using google play services to connect with native location provider.",
   "cordova": {
     "id": "android-location-provider",
